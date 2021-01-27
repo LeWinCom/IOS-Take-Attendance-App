@@ -33,7 +33,7 @@ class TableViewCell: UITableViewCell {
         return [Mon_button_title, Tue_button_title, Wed_button_title, Thu_button_title, Fri_button_title]
     }
     
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         
         // Configure the view for the selected state

@@ -9,6 +9,7 @@
 import UIKit
 
 class CalendarViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+   
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -46,18 +47,18 @@ class CalendarViewController: UIViewController, UITableViewDataSource, UITableVi
         // manual insert of lessons into timetable for now
         // students should write a function that constructs mttimetable object from server's json data
         // each timeslot no. represent 1 hour, starting from 8am and ending at 6pm, e.g. 8-9 am is 0, 9-10am is 1, ...
-        mytimetable.insert_lesson(0, day: Constants.TUES, module_code: "2ENGMEC", group_name: "L1H2", location: "05-02-07")
-        mytimetable.insert_lesson(1, day: Constants.TUES, module_code: "2ENGMEC", group_name: "L1H2", location: "05-02-07")
-        mytimetable.insert_lesson(0, day: Constants.WED, module_code: "1DIGCM", group_name: "P3P1", location: "07-01-07")
-        mytimetable.insert_lesson(1, day: Constants.WED, module_code: "1DIGCM", group_name: "P3P1", location: "07-01-07")
-        mytimetable.insert_lesson(5, day: Constants.WED, module_code: "1DIGCM", group_name: "T3P1", location: "08-04-01")
-        mytimetable.insert_lesson(6, day: Constants.WED, module_code: "1DIGCM", group_name: "T3P1", location: "08-04-01")
-        mytimetable.insert_lesson(5, day: Constants.FRI, module_code: "2ENGMEC", group_name: "T1H2", location: "06-04-07")
+        mytimetable.insert_lesson(timeslot: 0, day: Constants.TUES, module_code: "2ENGMEC", group_name: "L1H2", location: "05-02-07")
+        mytimetable.insert_lesson(timeslot: 1, day: Constants.TUES, module_code: "2ENGMEC", group_name: "L1H2", location: "05-02-07")
+        mytimetable.insert_lesson(timeslot: 0, day: Constants.WED, module_code: "1DIGCM", group_name: "P3P1", location: "07-01-07")
+        mytimetable.insert_lesson(timeslot: 1, day: Constants.WED, module_code: "1DIGCM", group_name: "P3P1", location: "07-01-07")
+        mytimetable.insert_lesson(timeslot: 5, day: Constants.WED, module_code: "1DIGCM", group_name: "T3P1", location: "08-04-01")
+        mytimetable.insert_lesson(timeslot: 6, day: Constants.WED, module_code: "1DIGCM", group_name: "T3P1", location: "08-04-01")
+        mytimetable.insert_lesson(timeslot: 5, day: Constants.FRI, module_code: "2ENGMEC", group_name: "T1H2", location: "06-04-07")
         
-        mytimetable.insert_lesson(7, day: Constants.FRI, module_code: "MEET", group_name: "ZQJ", location: "07-05-01")
-        mytimetable.insert_lesson(2, day: Constants.FRI, module_code: "FREE", group_name: "XXXX", location: "07-05-01")
-        mytimetable.insert_lesson(3, day: Constants.FRI, module_code: "LUNCH", group_name: "XXXX", location: "MAKAN")
-        mytimetable.insert_lesson(8, day: Constants.FRI, module_code: "FREE", group_name: "XXXX", location: "07-05-01")
+        mytimetable.insert_lesson(timeslot: 7, day: Constants.FRI, module_code: "MEET", group_name: "ZQJ", location: "07-05-01")
+        mytimetable.insert_lesson(timeslot: 2, day: Constants.FRI, module_code: "FREE", group_name: "XXXX", location: "07-05-01")
+        mytimetable.insert_lesson(timeslot: 3, day: Constants.FRI, module_code: "LUNCH", group_name: "XXXX", location: "MAKAN")
+        mytimetable.insert_lesson(timeslot: 8, day: Constants.FRI, module_code: "FREE", group_name: "XXXX", location: "07-05-01")
         
  
         // setup tableview
@@ -71,18 +72,18 @@ class CalendarViewController: UIViewController, UITableViewDataSource, UITableVi
         tableView.rowHeight = cellHeight
         
         tableView.allowsSelection = false
-        tableView.separatorStyle = .None    //don't want the row separator lines
+        tableView.separatorStyle = .none    //don't want the row separator lines
     }
     
     func get_currentHourMinDay () -> (Int!, Int!, Int!) {
         //get current time and day of week
         let date = NSDate()
-        let calendar = NSCalendar.currentCalendar()
-        let components = calendar.components([.Hour, .Minute, .Second], fromDate: date)
-        let components1 = calendar.components(.Weekday, fromDate: date)
-        let hour = components.hour - Constants.STARTING_HOUR
+        let calendar = NSCalendar.current
+        let components = calendar.dateComponents([.Hour, .Minute, .Second], from: date as Date)
+        let components1 = calendar.dateComponents(.weekday, from: date as Date)
+        let hour = components.hour ?? <#default value#> - Constants.STARTING_HOUR
         let min = components.minute
-        let day = components1.weekday - Constants.DAY_ADJ
+        let day = components1.weekday! - Constants.DAY_ADJ
         return (hour, min, day)
     }
     
@@ -100,19 +101,19 @@ class CalendarViewController: UIViewController, UITableViewDataSource, UITableVi
                 else {
                     alpha_value = 0.5
                 }
-                dayLabel_array[i].backgroundColor = UIColor.init(red: 0, green: 122.0/255.0, blue: 255.0/255.0, alpha: alpha_value)
+                dayLabel_array[i]?.backgroundColor = UIColor.init(red: 0, green: 122.0/255.0, blue: 255.0/255.0, alpha: alpha_value)
             }
         }
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
         print("viewWillAppear")
         // refresh the calendar's day, time and lesson slots
         refresh_calendar()
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
     }
     
@@ -127,13 +128,13 @@ class CalendarViewController: UIViewController, UITableViewDataSource, UITableVi
         print("Calendar_refeshed")
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return Constants.NO_SLOTS_PER_DAY
     }
     
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        cell = self.tableView.dequeueReusableCellWithIdentifier("cell", forIndexPath: indexPath) as! TableViewCell
+        cell = self.tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath as IndexPath) as! TableViewCell
         
         if indexPath.row == current_hour {
             //highlight the current hour timeslot
@@ -145,7 +146,7 @@ class CalendarViewController: UIViewController, UITableViewDataSource, UITableVi
         //cell.timeslot.frame.size.height = cellHeight  //no need if using auto layout with constraints
         cell.timeslot.layer.borderWidth = bw
         cell.timeslot.text = Constants.TIME_SLOTS[indexPath.row]
-        display_lessons(indexPath.row)
+        display_lessons(timeslot: indexPath.row)
         
         return cell
         
@@ -157,15 +158,15 @@ class CalendarViewController: UIViewController, UITableViewDataSource, UITableVi
         let buttons = self.cell.get_UIButtons() //get the array of 5 UIbuttons for the current cell
         
         for i in 0..<buttons.count {
-            let text = mytimetable.get_lesson_info(timeslot, day: i)    //get the lesson info
+            let text = mytimetable.get_lesson_info(timeslot: timeslot, day: i)    //get the lesson info
             let button = buttons[i]
             button.removeTarget(self, action: #selector(CalendarViewController.take_Attendance(_:)), forControlEvents: .TouchUpInside)  //reset by removing the target functions from all buttons
             
             if text != "" { // if we have a lesson in that timeslot
-                button.setTitle(text, forState: UIControlState.Normal)
-                button.titleLabel?.textAlignment = NSTextAlignment.Center
-                button.contentVerticalAlignment = UIControlContentVerticalAlignment.Center
-                button.setTitleColor(UIColor.blueColor(), forState: UIControlState.Normal)
+                button.setTitle(text, for: UIControlState.Normal)
+                button.titleLabel?.textAlignment = NSTextAlignment.center
+                button.contentVerticalAlignment = UIControlContentVerticalAlignment.center
+                button.setTitleColor(UIColor.blue, for: UIControlState.Normal)
                 button.layer.borderWidth = bw
                 var button_color = "white"
                 if (i == current_day) {
@@ -181,11 +182,11 @@ class CalendarViewController: UIViewController, UITableViewDataSource, UITableVi
                     button.tag = timeslot*Constants.NO_DAYS_PER_WEEK + i    // create the tag identifier for running the attenance taking function, corresponds to timeslot and day of week
                     button.addTarget(self, action: #selector(CalendarViewController.take_Attendance(_:)), forControlEvents: .TouchUpInside)
                     button.backgroundColor = UIColor.init(red: 1, green: 0, blue: 0, alpha: 0.75)
-                    button.setTitleColor(UIColor.yellowColor(), forState: UIControlState.Normal)
+                    button.setTitleColor(UIColor.yellow, for: UIControlState.Normal)
                 }
                 else {
                     button.backgroundColor = UIColor.init(red: 1, green: 1, blue: 1, alpha: 1)
-                    button.setTitleColor(UIColor.blueColor(), forState: UIControlState.Normal)
+                    button.setTitleColor(UIColor.blue, for: UIControlState.Normal)
                 }
             }
         }
